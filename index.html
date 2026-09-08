@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#fff7df" />
+    <meta name="description" content="Chiikawa 60 秒伙伴挑战：找星星饼干、邀请伙伴、30 秒极速连点。" />
+    <title>Chiikawa 伙伴大挑战</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="youtubePlayer" class="youtube-player" aria-hidden="true"></div>
+    <div class="paper-cloud cloud-a"></div><div class="paper-cloud cloud-b"></div>
+    <main class="app" id="app">
+      <header class="topbar">
+        <button class="brand" data-action="home" aria-label="回到首页"><span>ち</span><b>CHII QUEST</b></button>
+        <div class="top-actions">
+          <button class="music-button" id="musicButton" data-action="music" aria-label="切换背景音乐"><span id="musicIcon">♫</span><b>100%</b></button>
+          <div class="score-pill"><span>★</span><b id="scoreDisplay">0</b></div>
+        </div>
+      </header>
+
+      <section class="screen active intro" id="introScreen">
+        <p class="kicker"><i></i> 20 秒眼力 · 15 秒手速</p>
+        <h1>和 Chiikawa<br />一起<span>玩翻全场！</span></h1>
+        <p class="lead">眼力、手速，一次全部测出来。<br />准备好成为今天的最强伙伴了吗？</p>
+        <div class="hero-stickers" aria-hidden="true">
+          <div class="sprite sprite-3"></div><div class="sprite sprite-4"></div><div class="sprite sprite-8"></div>
+          <i class="deco d1">✦</i><i class="deco d2">●</i><i class="deco d3">✦</i>
+        </div>
+        <div class="room-badge" id="roomBadge"><span>⌁</span><div><small>正在确认房间</small><b>请稍候…</b></div></div>
+        <form class="card join-card" id="joinForm">
+          <label><span>你的名字</span><input id="studentName" maxlength="30" autocomplete="name" placeholder="怎么称呼你？" required /></label>
+          <label><span>班级</span><input id="studentClass" maxlength="20" placeholder="例如：F1 A" required /></label>
+          <button class="primary" type="submit">开始挑战 <span>GO!</span></button>
+          <small>作答只用于本次活动，不会公开。</small>
+        </form>
+        <button class="teacher-link" data-action="admin">老师实时后台</button>
+      </section>
+
+      <section class="screen game-screen" id="findScreen">
+        <div class="level-heading"><div><p>LEVEL 01 · 眼力挑战</p><h2>找到星星饼干！</h2></div><div class="timer" id="findTimer">20.0</div></div>
+        <div class="mission-strip"><img src="/assets/star-cookie.png" alt="星星饼干" /><span>藏在角色中，找到越多越好</span><b><span id="foundCount">0</span> 个</b></div>
+        <div class="find-board" id="findBoard" aria-label="寻找星星饼干游戏区域"></div>
+        <div class="game-cover" id="findCover"><div class="cover-card"><span class="cover-icon">🔎</span><h3 id="findCoverTitle">20 秒眼力大挑战</h3><p id="findCoverText">在满满的 Chiikawa 伙伴中，点击藏起来的星星饼干。</p><button class="primary" data-action="start-find">开始计时 <span>20s</span></button></div></div>
+      </section>
+
+      <section class="screen bonus-screen" id="bonusScreen">
+        <div class="bonus-top"><span>★</span><p>SPECIAL MISSION</p></div>
+        <h2>特殊任务出现！</h2>
+        <p class="bonus-lead">邀请一位认识的朋友加入冒险<br />双方都能获得限定伙伴奖励。</p>
+        <div class="bonus-friends" aria-hidden="true"><div class="sprite sprite-0"></div><b>＋</b><div class="sprite sprite-7"></div></div>
+        <form class="card bonus-form" id="bonusForm">
+          <label><span>朋友名字</span><input id="friendName" maxlength="30" placeholder="输入朋友的名字" /></label>
+          <label><span>电话号码</span><input id="friendPhone" inputmode="tel" maxlength="20" placeholder="例如：01X-XXXXXXX" /></label>
+          <label class="consent"><input id="friendConsent" type="checkbox" /><span>我确认这是我认识并愿意邀请参加活动的朋友，资料只用于本次活动邀请。</span></label>
+          <p class="form-error" id="bonusError"></p>
+          <button class="primary" type="submit">完成特殊任务 <span>+50 ★</span></button>
+        </form>
+      </section>
+
+      <section class="screen game-screen tap-screen" id="tapScreen">
+        <div class="level-heading"><div><p>LEVEL 02 · 手速挑战</p><h2>乌萨奇跳跳跳！</h2></div><div class="timer" id="tapTimer">15.0</div></div>
+        <div class="tap-score"><span>当前点击</span><strong id="tapCount">0</strong><b>次</b></div>
+        <div class="tap-stage" id="tapStage">
+          <button class="tap-character" id="tapCharacter" aria-label="点击乌萨奇"><img src="/assets/usagi-tap.png" alt="闭嘴微笑的乌萨奇" draggable="false" /></button>
+          <div class="tap-shadow"></div><p>用最快速度点击角色！</p>
+        </div>
+        <div class="game-cover" id="tapCover"><div class="cover-card"><span class="cover-icon">👆</span><h3 id="tapCoverTitle">15 秒手速大挑战</h3><p id="tapCoverText">像 Popcat 一样不断点击。每点一次，乌萨奇就会开心地跳起来！</p><button class="primary" data-action="start-tap">开始计时 <span>15s</span></button></div></div>
+      </section>
+
+      <section class="screen result-screen" id="resultScreen">
+        <p class="kicker"><i></i> QUEST COMPLETE</p><h2>挑战完成啦！</h2>
+        <article class="result-card">
+          <div class="result-sticker sprite sprite-4"></div><p>你的伙伴称号</p><h3 id="resultRank">元气伙伴</h3>
+          <div class="result-stats"><div><span>找到饼干</span><strong><b id="finalFound">0</b> 个</strong></div><div><span>极速点击</span><strong><b id="finalTaps">0</b> 次</strong></div></div>
+          <div class="total"><span>冒险总积分</span><strong>★ <b id="finalScore">0</b></strong></div>
+        </article>
+        <div class="save-status" id="saveStatus"><span></span><p>正在安全保存成绩…</p></div>
+        <div class="reward" id="reward"><span>🎁</span><div><strong>礼物抽选资格已解锁！</strong><p>向现场老师展示这个画面即可参加。</p></div></div>
+        <button class="primary" data-action="restart">再玩一次 <span>↻</span></button>
+      </section>
+
+      <section class="screen admin" id="adminScreen">
+        <button class="back" data-action="home">← 返回挑战</button>
+        <div class="admin-title"><div><p>TEACHER DASHBOARD</p><h2>实时活动后台</h2></div><span class="live"><i></i> LIVE</span></div>
+        <div class="card login-card" id="adminLogin">
+          <h3>老师登录</h3><p>使用 Supabase 中已设置 teacher 权限的账号。</p>
+          <form id="loginForm"><label><span>邮箱</span><input id="adminEmail" type="email" autocomplete="username" required /></label><label><span>密码</span><input id="adminPassword" type="password" autocomplete="current-password" required /></label><p class="form-error" id="loginError"></p><button class="primary" type="submit">登录后台</button></form>
+          <small id="configHint"></small>
+        </div>
+        <div class="dashboard" id="dashboard" hidden>
+          <div class="admin-controls"><button class="export" data-action="export">导出 CSV</button><button class="logout" data-action="logout">退出</button></div>
+          <div class="stat-grid"><article><span>参与人数</span><strong id="totalPlayers">0</strong></article><article><span>活动房间</span><strong id="totalRooms">0</strong></article><article><span>平均点击</span><strong id="averageTaps">0</strong></article></div>
+          <nav class="admin-tabs"><button class="active" data-tab="rooms">房间管理</button><button data-tab="global">总排行榜</button><button data-tab="room">房间排行榜</button></nav>
+          <div class="admin-panel active" id="roomsPanel">
+            <form class="create-room" id="createRoomForm"><input id="roomName" maxlength="40" placeholder="例如：F1 开放日 A 组" required /><button type="submit">＋ 开新房间</button></form>
+            <div class="room-list" id="roomList"></div>
+          </div>
+          <div class="admin-panel" id="globalPanel"><div class="ranking-head"><div><b>总排行榜</b><span>每位学生保留最高成绩</span></div></div><div class="table-card"><div class="table-scroll"><table class="ranking-table"><thead><tr><th>排名</th><th>学生</th><th>房间</th><th>饼干</th><th>点击</th><th>总分</th></tr></thead><tbody id="globalRows"></tbody></table></div><div class="empty" id="globalEmpty">✦<span>等待第一位学生完成挑战</span></div></div></div>
+          <div class="admin-panel" id="roomPanel"><div class="ranking-head"><div><b>房间排行榜</b><span>查看指定房间成绩</span></div><select id="roomFilter"></select></div><div class="table-card"><div class="table-scroll"><table class="ranking-table"><thead><tr><th>排名</th><th>学生</th><th>班级</th><th>饼干</th><th>点击</th><th>总分</th></tr></thead><tbody id="roomRows"></tbody></table></div><div class="empty" id="roomEmpty">✦<span>这个房间还没有成绩</span></div></div></div>
+        </div>
+      </section>
+    </main>
+    <div class="qr-modal" id="qrModal" hidden><div class="qr-card"><button data-action="close-qr">×</button><p>扫码进入房间</p><h3 id="qrRoomName">房间</h3><canvas id="qrCanvas"></canvas><strong id="qrRoomCode">------</strong><small>学生扫码后，成绩会自动归入这个房间。</small><button class="copy-link" data-action="copy-room-link">复制房间链接</button></div></div>
+    <button class="music-gate" id="musicGate" data-action="enable-music" hidden>♫ 轻触开启背景音乐</button>
+    <div class="toast" id="toast"></div><div class="fx-layer" id="fxLayer"></div>
+    <script type="module" src="/src/app.js"></script>
+  </body>
+</html>
