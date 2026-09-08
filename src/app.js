@@ -12,11 +12,8 @@ const SUPABASE_PUBLIC_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || imp
 const db = SUPABASE_URL && SUPABASE_PUBLIC_KEY
   ? createClient(SUPABASE_URL, SUPABASE_PUBLIC_KEY)
   : null;
-const IS_LOCAL_DEMO = import.meta.env.DEV && !db;
 
 const PENDING_KEY = "chiiQuestPendingV3";
-const LOCAL_ROOMS_KEY = "chiiQuestRoomsV3";
-const LOCAL_RECORDS_KEY = "chiiQuestRecordsV3";
 const FIND_SECONDS = 20;
 const TAP_SECONDS = 15;
 const TOTAL_TARGETS = 14;
@@ -31,7 +28,6 @@ let adminRooms = [];
 let selectedRoomId = "";
 let currentQrLink = "";
 let toastTimer = null;
-let adminDemo = false;
 
 const state = {
   studentName: "",
@@ -93,7 +89,7 @@ function resetGame() {
 }
 
 async function resolveRoom() {
-  const code = (params.get("room") || (import.meta.env.DEV ? "DEMO01" : ""))
+  const code = (params.get("room") || "")
     .toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8);
   const badge = $("#roomBadge");
   const submit = $("#joinForm button[type=submit]");
@@ -106,9 +102,7 @@ async function resolveRoom() {
     return;
   }
 
-  if (IS_LOCAL_DEMO) {
-    state.room = getLocalRooms().find((room) => room.code === code && room.status === "active") || null;
-  } else if (db) {
+  if (db) {
     const { data } = await db.from("game_rooms")
       .select("id,code,name,status").eq("code", code).eq("status", "active").maybeSingle();
     state.room = data || null;
@@ -122,7 +116,7 @@ async function resolveRoom() {
   } else {
     badge.className = "room-badge invalid";
     badge.querySelector("small").textContent = `房间 ${code} 无法进入`;
-    badge.querySelector("b").textContent = db || IS_LOCAL_DEMO ? "房间不存在或已经关闭" : "请先配置 Supabase";
+    badge.querySelector("b").textContent = db ? "房间不存在或已经关闭" : "网站尚未连接 Supabase";
     submit.disabled = true;
   }
 }
@@ -288,10 +282,6 @@ function payload() {
 }
 
 async function sendSubmission(item) {
-  if (IS_LOCAL_DEMO) {
-    saveLocalRecord(item);
-    return { ok: true };
-  }
   const response = await fetch("/api/submissions", {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -309,7 +299,7 @@ async function submitResult() {
   try {
     await sendSubmission(item);
     status.classList.add("saved");
-    status.querySelector("p").textContent = IS_LOCAL_DEMO ? "成绩已保存到本地演示后台" : "成绩已安全保存到云端后台";
+    status.querySelector("p").textContent = "成绩已安全保存到云端后台";
     await flushQueue();
   } catch {
     queueSubmission(item);
@@ -318,14 +308,13 @@ async function submitResult() {
   }
 }
 
-function pending() { return readLocal(PENDING_KEY, []); }
+function pending() { return readQueue(PENDING_KEY, []); }
 function queueSubmission(item) {
   const items = pending().filter((entry) => entry.attemptId !== item.attemptId);
   items.push(item);
   localStorage.setItem(PENDING_KEY, JSON.stringify(items));
 }
 async function flushQueue() {
-  if (IS_LOCAL_DEMO) return;
   const failed = [];
   for (const item of pending()) {
     try { await sendSubmission(item); } catch { failed.push(item); }
@@ -333,93 +322,51 @@ async function flushQueue() {
   localStorage.setItem(PENDING_KEY, JSON.stringify(failed));
 }
 
-function readLocal(key, fallback) {
+function readQueue(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); }
   catch { return fallback; }
 }
 
-function getLocalRooms() {
-  let rooms = readLocal(LOCAL_ROOMS_KEY, []);
-  if (!rooms.length) {
-    rooms = [{ id: uuid(), code: "DEMO01", name: "本地预览房", status: "active", created_at: new Date().toISOString() }];
-    localStorage.setItem(LOCAL_ROOMS_KEY, JSON.stringify(rooms));
-  }
-  return rooms;
-}
-
-function getLocalRecords() { return readLocal(LOCAL_RECORDS_KEY, []); }
-
-function saveLocalRecord(item) {
-  const room = getLocalRooms().find((entry) => entry.code === item.roomCode);
-  const records = getLocalRecords().filter((entry) => entry.attempt_id !== item.attemptId);
-  records.unshift({
-    id: uuid(), attempt_id: item.attemptId, room_id: room?.id,
-    student_name: item.studentName, student_class: item.studentClass,
-    found_count: item.foundCount, tap_count: item.tapCount, total_score: item.totalScore,
-    friend_name: item.friendName, friend_phone: item.friendPhone,
-    consent_at: new Date().toISOString(), created_at: new Date().toISOString(),
-    game_rooms: room ? { name: room.name, code: room.code } : null
-  });
-  localStorage.setItem(LOCAL_RECORDS_KEY, JSON.stringify(records));
-}
-
 async function initAdmin() {
   if (!db) {
-    $("#configHint").textContent = "本地预览可直接进入演示后台；部署后填入 Supabase 环境变量即切换为云端。";
-    if (!$("#demoAdminButton")) {
-      const button = document.createElement("button");
-      button.id = "demoAdminButton";
-      button.className = "demo-admin";
-      button.type = "button";
-      button.dataset.action = "demo-admin";
-      button.textContent = "进入本地演示后台";
-      $("#adminLogin").appendChild(button);
-    }
+    $("#configHint").textContent = "网站尚未连接 Supabase，请先设置环境变量并重新部署。";
     return;
   }
   const { data } = await db.auth.getSession();
-  if (data.session) openDashboard(false);
+  if (data.session) openDashboard();
 }
 
 async function login(event) {
   event.preventDefault();
-  if (!db) { showToast("本地预览请使用演示后台"); return; }
+  if (!db) { showToast("网站尚未连接 Supabase"); return; }
   $("#loginError").textContent = "";
   const { error } = await db.auth.signInWithPassword({
     email: $("#adminEmail").value.trim(),
     password: $("#adminPassword").value
   });
   if (error) { $("#loginError").textContent = "登录失败，请检查账号或 teacher 权限。"; return; }
-  openDashboard(false);
+  openDashboard();
 }
 
-async function openDashboard(demo) {
-  adminDemo = demo;
+async function openDashboard() {
   $("#adminLogin").hidden = true;
   $("#dashboard").hidden = false;
   await loadAdminData();
-  if (!demo) {
-    realtimeChannels.forEach((channel) => db.removeChannel(channel));
-    realtimeChannels = [
-      db.channel("submissions-live").on("postgres_changes", { event: "*", schema: "public", table: "challenge_submissions" }, loadAdminData).subscribe(),
-      db.channel("rooms-live").on("postgres_changes", { event: "*", schema: "public", table: "game_rooms" }, loadAdminData).subscribe()
-    ];
-  }
+  realtimeChannels.forEach((channel) => db.removeChannel(channel));
+  realtimeChannels = [
+    db.channel("submissions-live").on("postgres_changes", { event: "*", schema: "public", table: "challenge_submissions" }, loadAdminData).subscribe(),
+    db.channel("rooms-live").on("postgres_changes", { event: "*", schema: "public", table: "game_rooms" }, loadAdminData).subscribe()
+  ];
 }
 
 async function loadAdminData() {
-  if (adminDemo) {
-    adminRooms = getLocalRooms();
-    adminRecords = getLocalRecords();
-  } else {
-    const [roomsResult, recordsResult] = await Promise.all([
-      db.from("game_rooms").select("*").order("created_at", { ascending: false }),
-      db.from("challenge_submissions").select("*,game_rooms(name,code)").order("created_at", { ascending: false }).limit(2000)
-    ]);
-    if (roomsResult.error || recordsResult.error) { showToast("读取失败，请检查 teacher 权限"); return; }
-    adminRooms = roomsResult.data || [];
-    adminRecords = recordsResult.data || [];
-  }
+  const [roomsResult, recordsResult] = await Promise.all([
+    db.from("game_rooms").select("*").order("created_at", { ascending: false }),
+    db.from("challenge_submissions").select("*,game_rooms(name,code)").order("created_at", { ascending: false }).limit(2000)
+  ]);
+  if (roomsResult.error || recordsResult.error) { showToast("读取失败，请检查 teacher 权限"); return; }
+  adminRooms = roomsResult.data || [];
+  adminRecords = recordsResult.data || [];
   renderAdmin();
 }
 
@@ -470,15 +417,9 @@ async function createRoom(event) {
   const name = $("#roomName").value.trim();
   if (!name) return;
   const code = generateRoomCode();
-  if (adminDemo) {
-    const rooms = getLocalRooms();
-    rooms.unshift({ id: uuid(), code, name, status: "active", created_at: new Date().toISOString() });
-    localStorage.setItem(LOCAL_ROOMS_KEY, JSON.stringify(rooms));
-  } else {
-    const { data: userData } = await db.auth.getUser();
-    const { error } = await db.from("game_rooms").insert({ name, code, created_by: userData.user.id });
-    if (error) { showToast("开房失败，请重试"); return; }
-  }
+  const { data: userData } = await db.auth.getUser();
+  const { error } = await db.from("game_rooms").insert({ name, code, created_by: userData.user.id });
+  if (error) { showToast("开房失败，请重试"); return; }
   $("#createRoomForm").reset();
   await loadAdminData();
   showToast(`房间 ${code} 已创建`);
@@ -494,15 +435,8 @@ function generateRoomCode() {
 }
 
 async function closeRoom(id) {
-  if (adminDemo) {
-    const rooms = getLocalRooms();
-    const room = rooms.find((entry) => entry.id === id);
-    if (room) room.status = "closed";
-    localStorage.setItem(LOCAL_ROOMS_KEY, JSON.stringify(rooms));
-  } else {
-    const { error } = await db.from("game_rooms").update({ status: "closed" }).eq("id", id);
-    if (error) { showToast("关闭房间失败"); return; }
-  }
+  const { error } = await db.from("game_rooms").update({ status: "closed" }).eq("id", id);
+  if (error) { showToast("关闭房间失败"); return; }
   await loadAdminData();
 }
 
@@ -523,8 +457,7 @@ async function showQr(id) {
 async function logout() {
   realtimeChannels.forEach((channel) => db?.removeChannel(channel));
   realtimeChannels = [];
-  if (!adminDemo) await db?.auth.signOut();
-  adminDemo = false;
+  await db?.auth.signOut();
   $("#dashboard").hidden = true;
   $("#adminLogin").hidden = false;
 }
@@ -659,7 +592,6 @@ document.addEventListener("click", async (event) => {
   if (!action) return;
   if (action === "home") showScreen("introScreen");
   if (action === "admin") showScreen("adminScreen");
-  if (action === "demo-admin") openDashboard(true);
   if (action === "start-find") startFind();
   if (action === "to-bonus") showScreen("bonusScreen");
   if (action === "start-tap") startTap();
@@ -680,12 +612,3 @@ resetGame();
 resolveRoom();
 flushQueue();
 if (params.has("admin")) showScreen("adminScreen");
-if (import.meta.env.DEV && params.get("preview") === "find") showScreen("findScreen");
-if (import.meta.env.DEV && params.get("preview") === "tap") showScreen("tapScreen");
-if (import.meta.env.DEV && params.get("preview") === "find-live") { showScreen("findScreen"); $("#findCover").style.display = "none"; }
-if (import.meta.env.DEV && params.get("preview") === "tap-live") { showScreen("tapScreen"); $("#tapCover").style.display = "none"; }
-if (import.meta.env.DEV && params.get("preview") === "admin-demo") { showScreen("adminScreen"); openDashboard(true); }
-if (import.meta.env.DEV && params.get("preview") === "qr-demo") {
-  showScreen("adminScreen");
-  openDashboard(true).then(() => showQr(adminRooms[0]?.id));
-}
