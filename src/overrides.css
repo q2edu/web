@@ -270,6 +270,43 @@ body.admin-view .stat-grid {
   content: "  👑";
 }
 
+.ranking-pagination {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 9px;
+  align-items: center;
+  margin-top: 11px;
+}
+
+.ranking-pagination button {
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1.5px solid var(--ink);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.ranking-pagination button:not(:disabled):hover {
+  background: var(--yellow);
+  transform: translateY(-1px);
+}
+
+.ranking-pagination button:disabled {
+  border-color: var(--line);
+  color: #b7aaa2;
+  cursor: not-allowed;
+}
+
+.ranking-pagination span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  text-align: center;
+}
+
 .mission-panel .table-card {
   min-height: 300px;
 }
@@ -400,6 +437,13 @@ body.admin-view .stat-grid {
 #rankingsPanel.fullscreen-fallback .ranking-table .score-badge {
   padding: 8px 10px;
   font-size: clamp(15px, 1.15vw, 20px);
+}
+
+#rankingsPanel:fullscreen .ranking-pagination button,
+#rankingsPanel.fullscreen-fallback .ranking-pagination button,
+#rankingsPanel:fullscreen .ranking-pagination span,
+#rankingsPanel.fullscreen-fallback .ranking-pagination span {
+  font-size: clamp(12px, .9vw, 15px);
 }
 
 @media (max-width: 900px) {

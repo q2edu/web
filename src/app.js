@@ -17,6 +17,7 @@ const PENDING_KEY = "chiiQuestPendingV3";
 const FIND_SECONDS = 20;
 const TAP_SECONDS = 15;
 const TOTAL_TARGETS = 14;
+const RANKING_PAGE_SIZE = 10;
 const MUSIC_ID = "LzzW_TBL558";
 
 let timerHandle = null;
@@ -26,6 +27,8 @@ let realtimeChannels = [];
 let adminRecords = [];
 let adminRooms = [];
 let selectedRoomId = "";
+let globalRankingPage = 1;
+let roomRankingPage = 1;
 let currentQrLink = "";
 let toastTimer = null;
 
@@ -419,17 +422,30 @@ function uniqueBest(records) {
 function renderLeaderboards() {
   const globalRecords = uniqueBest(adminRecords);
   const roomRecords = uniqueBest(adminRecords.filter((record) => record.room_id === selectedRoomId));
-  fillRanking($("#globalRows"), $("#globalEmpty"), globalRecords, true);
-  fillRanking($("#roomRows"), $("#roomEmpty"), roomRecords, false);
+  globalRankingPage = fillRanking($("#globalRows"), $("#globalEmpty"), globalRecords, true, globalRankingPage, "global");
+  roomRankingPage = fillRanking($("#roomRows"), $("#roomEmpty"), roomRecords, false, roomRankingPage, "room");
   renderPodium($("#globalPodium"), globalRecords);
   renderPodium($("#roomPodium"), roomRecords);
   const selectedRoom = adminRooms.find((room) => room.id === selectedRoomId);
   $("#selectedRoomLabel").textContent = selectedRoom ? `${selectedRoom.name} · ${selectedRoom.code}` : "尚未选择房间";
 }
 
-function fillRanking(tbody, empty, records, showRoom) {
+function fillRanking(tbody, empty, records, showRoom, requestedPage, pageKey) {
   empty.classList.toggle("show", !records.length);
-  tbody.innerHTML = records.map((record, index) => `<tr class="rank-row rank-${Math.min(index + 1, 4)}"><td><b class="rank r${index + 1}">${index + 1}</b></td><td><strong class="player-name">${escapeHtml(record.student_name)}</strong>${showRoom ? `<small>${escapeHtml(record.student_class)}</small>` : ""}</td><td>${showRoom ? escapeHtml(record.game_rooms?.name || "—") : escapeHtml(record.student_class)}</td><td>${record.found_count}</td><td>${record.tap_count}</td><td><b class="score-badge">${record.total_score} ★</b></td></tr>`).join("");
+  const totalPages = Math.max(1, Math.ceil(records.length / RANKING_PAGE_SIZE));
+  const page = Math.min(Math.max(1, requestedPage), totalPages);
+  const offset = (page - 1) * RANKING_PAGE_SIZE;
+  const visibleRecords = records.slice(offset, offset + RANKING_PAGE_SIZE);
+  tbody.innerHTML = visibleRecords.map((record, index) => {
+    const rankNumber = offset + index + 1;
+    return `<tr class="rank-row rank-${Math.min(rankNumber, 4)}"><td><b class="rank r${rankNumber}">${rankNumber}</b></td><td><strong class="player-name">${escapeHtml(record.student_name)}</strong>${showRoom ? `<small>${escapeHtml(record.student_class)}</small>` : ""}</td><td>${showRoom ? escapeHtml(record.game_rooms?.name || "—") : escapeHtml(record.student_class)}</td><td>${record.found_count}</td><td>${record.tap_count}</td><td><b class="score-badge">${record.total_score} ★</b></td></tr>`;
+  }).join("");
+  $("#" + pageKey + "PageInfo").textContent = `第 ${page} / ${totalPages} 页 · 共 ${records.length} 人`;
+  const previous = document.querySelector(`[data-page-list="${pageKey}"][data-page-direction="-1"]`);
+  const next = document.querySelector(`[data-page-list="${pageKey}"][data-page-direction="1"]`);
+  previous.disabled = page <= 1;
+  next.disabled = page >= totalPages;
+  return page;
 }
 
 function renderPodium(container, records) {
@@ -647,9 +663,17 @@ $("#bonusForm").addEventListener("submit", (event) => {
 $("#loginForm").addEventListener("submit", login);
 $("#createRoomForm").addEventListener("submit", createRoom);
 $("#tapCharacter").addEventListener("pointerdown", tapCharacter);
-$("#roomFilter").addEventListener("change", (event) => { selectedRoomId = event.target.value; renderLeaderboards(); });
+$("#roomFilter").addEventListener("change", (event) => { selectedRoomId = event.target.value; roomRankingPage = 1; renderLeaderboards(); });
 
 document.addEventListener("click", async (event) => {
+  const pageList = event.target.closest("[data-page-list]")?.dataset.pageList;
+  if (pageList) {
+    const direction = Number(event.target.closest("[data-page-list]").dataset.pageDirection);
+    if (pageList === "global") globalRankingPage += direction;
+    if (pageList === "room") roomRankingPage += direction;
+    renderLeaderboards();
+    return;
+  }
   const tab = event.target.closest("[data-tab]")?.dataset.tab;
   if (tab) {
     document.querySelectorAll("[data-tab]").forEach((button) => button.classList.toggle("active", button.dataset.tab === tab));
