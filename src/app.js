@@ -417,15 +417,25 @@ function uniqueBest(records) {
 }
 
 function renderLeaderboards() {
-  fillRanking($("#globalRows"), $("#globalEmpty"), uniqueBest(adminRecords), true);
-  fillRanking($("#roomRows"), $("#roomEmpty"), uniqueBest(adminRecords.filter((record) => record.room_id === selectedRoomId)), false);
+  const globalRecords = uniqueBest(adminRecords);
+  const roomRecords = uniqueBest(adminRecords.filter((record) => record.room_id === selectedRoomId));
+  fillRanking($("#globalRows"), $("#globalEmpty"), globalRecords, true);
+  fillRanking($("#roomRows"), $("#roomEmpty"), roomRecords, false);
+  renderPodium($("#globalPodium"), globalRecords);
+  renderPodium($("#roomPodium"), roomRecords);
   const selectedRoom = adminRooms.find((room) => room.id === selectedRoomId);
   $("#selectedRoomLabel").textContent = selectedRoom ? `${selectedRoom.name} · ${selectedRoom.code}` : "尚未选择房间";
 }
 
 function fillRanking(tbody, empty, records, showRoom) {
   empty.classList.toggle("show", !records.length);
-  tbody.innerHTML = records.map((record, index) => `<tr><td><b class="rank r${index + 1}">${index + 1}</b></td><td><strong>${escapeHtml(record.student_name)}</strong>${showRoom ? `<small>${escapeHtml(record.student_class)}</small>` : ""}</td><td>${showRoom ? escapeHtml(record.game_rooms?.name || "—") : escapeHtml(record.student_class)}</td><td>${record.found_count}</td><td>${record.tap_count}</td><td><b>${record.total_score} ★</b></td></tr>`).join("");
+  tbody.innerHTML = records.map((record, index) => `<tr class="rank-row rank-${Math.min(index + 1, 4)}"><td><b class="rank r${index + 1}">${index + 1}</b></td><td><strong class="player-name">${escapeHtml(record.student_name)}</strong>${showRoom ? `<small>${escapeHtml(record.student_class)}</small>` : ""}</td><td>${showRoom ? escapeHtml(record.game_rooms?.name || "—") : escapeHtml(record.student_class)}</td><td>${record.found_count}</td><td>${record.tap_count}</td><td><b class="score-badge">${record.total_score} ★</b></td></tr>`).join("");
+}
+
+function renderPodium(container, records) {
+  const medals = ["🥇", "🥈", "🥉"];
+  container.innerHTML = records.slice(0, 3).map((record, index) => `<article class="podium-card podium-${index + 1}"><span>${medals[index]}</span><strong>${escapeHtml(record.student_name)}</strong><small>${escapeHtml(record.student_class)}</small><b>${record.total_score} ★</b></article>`).join("");
+  container.classList.toggle("empty-podium", records.length === 0);
 }
 
 function renderMissions() {
@@ -516,7 +526,7 @@ async function logout() {
 function exportCsv() {
   if (!adminRecords.length) { showToast("暂无记录可导出"); return; }
   const rows = [
-    ["房间", "房间代码", "学生名字", "班级", "找到饼干", "点击次数", "总分", "朋友名字", "朋友电话", "同意时间", "完成时间"],
+    ["房间", "房间代码", "学生名字", "Form", "找到饼干", "点击次数", "总分", "朋友名字", "朋友电话", "同意时间", "完成时间"],
     ...adminRecords.map((record) => [
       record.game_rooms?.name || "", record.game_rooms?.code || "", record.student_name,
       record.student_class, record.found_count, record.tap_count, record.total_score,

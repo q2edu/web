@@ -33,7 +33,7 @@
         <div class="room-badge" id="roomBadge"><span>⌁</span><div><small>正在确认房间</small><b>请稍候…</b></div></div>
         <form class="card join-card" id="joinForm">
           <label><span>你的名字</span><input id="studentName" maxlength="30" autocomplete="name" placeholder="怎么称呼你？" required /></label>
-          <label><span>班级</span><input id="studentClass" maxlength="20" placeholder="例如：F1 A" required /></label>
+          <label><span>Form</span><input id="studentClass" maxlength="20" placeholder="F1" required /></label>
           <button class="primary" type="submit">开始挑战 <span>GO!</span></button>
           <small>作答只用于本次活动，不会公开。</small>
         </form>
@@ -102,13 +102,13 @@
           <div class="admin-panel rankings-panel" id="rankingsPanel">
             <div class="rankings-toolbar"><div><b>实时双榜</b><span>左侧全玩家 · 右侧当前房间</span></div><div><select id="roomFilter" aria-label="选择房间"></select><button class="fullscreen-rankings" data-action="fullscreen-rankings">⛶ 全屏显示</button></div></div>
             <div class="dual-rankings">
-              <section class="ranking-pane global-ranking"><div class="ranking-pane-title"><span>🏆</span><div><b>全玩家排行榜</b><small>每位学生保留最高成绩</small></div></div><div class="table-card"><div class="table-scroll"><table class="ranking-table"><thead><tr><th>排名</th><th>学生</th><th>房间</th><th>饼干</th><th>点击</th><th>总分</th></tr></thead><tbody id="globalRows"></tbody></table></div><div class="empty" id="globalEmpty">✦<span>等待第一位学生完成挑战</span></div></div></section>
-              <section class="ranking-pane room-ranking"><div class="ranking-pane-title"><span>⭐</span><div><b>此房间排行榜</b><small id="selectedRoomLabel">尚未选择房间</small></div></div><div class="table-card"><div class="table-scroll"><table class="ranking-table"><thead><tr><th>排名</th><th>学生</th><th>班级</th><th>饼干</th><th>点击</th><th>总分</th></tr></thead><tbody id="roomRows"></tbody></table></div><div class="empty" id="roomEmpty">✦<span>这个房间还没有成绩</span></div></div></section>
+              <section class="ranking-pane global-ranking"><div class="ranking-pane-title"><span>🏆</span><div><b>全玩家排行榜</b><small>每位学生保留最高成绩</small></div></div><div class="podium" id="globalPodium"></div><div class="table-card"><div class="table-scroll"><table class="ranking-table"><thead><tr><th>排名</th><th>学生</th><th>房间</th><th>饼干</th><th>点击</th><th>总分</th></tr></thead><tbody id="globalRows"></tbody></table></div><div class="empty" id="globalEmpty">✦<span>等待第一位学生完成挑战</span></div></div></section>
+              <section class="ranking-pane room-ranking"><div class="ranking-pane-title"><span>⭐</span><div><b>此房间排行榜</b><small id="selectedRoomLabel">尚未选择房间</small></div></div><div class="podium" id="roomPodium"></div><div class="table-card"><div class="table-scroll"><table class="ranking-table"><thead><tr><th>排名</th><th>学生</th><th>Form</th><th>饼干</th><th>点击</th><th>总分</th></tr></thead><tbody id="roomRows"></tbody></table></div><div class="empty" id="roomEmpty">✦<span>这个房间还没有成绩</span></div></div></section>
             </div>
           </div>
           <div class="admin-panel mission-panel" id="missionPanel">
             <div class="ranking-head"><div><b>特殊任务资料</b><span>仅老师账号可查看；资料来自学生完成的强制特殊任务</span></div></div>
-            <div class="table-card"><div class="table-scroll"><table class="mission-table"><thead><tr><th>学生</th><th>班级</th><th>房间</th><th>朋友姓名</th><th>电话号码</th><th>提交时间</th></tr></thead><tbody id="missionRows"></tbody></table></div><div class="empty" id="missionEmpty">✦<span>还没有特殊任务资料</span></div></div>
+            <div class="table-card"><div class="table-scroll"><table class="mission-table"><thead><tr><th>学生</th><th>Form</th><th>房间</th><th>朋友姓名</th><th>电话号码</th><th>提交时间</th></tr></thead><tbody id="missionRows"></tbody></table></div><div class="empty" id="missionEmpty">✦<span>还没有特殊任务资料</span></div></div>
           </div>
         </div>
       </section>

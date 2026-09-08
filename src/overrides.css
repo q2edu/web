@@ -139,6 +139,137 @@ body.admin-view .stat-grid {
   min-width: 560px;
 }
 
+.podium {
+  display: grid;
+  min-height: 104px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 2px 0 12px;
+  align-items: end;
+}
+
+.podium.empty-podium {
+  display: none;
+}
+
+.podium-card {
+  position: relative;
+  min-width: 0;
+  padding: 11px 7px 9px;
+  overflow: hidden;
+  border: 1.5px solid rgba(62, 48, 43, .25);
+  border-radius: 15px;
+  background: #f0f2f3;
+  box-shadow: 0 5px 12px rgba(62, 48, 43, .08);
+  text-align: center;
+}
+
+.podium-card::after {
+  content: "";
+  position: absolute;
+  inset: auto -20% -35px;
+  height: 58px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .55);
+  transform: rotate(-5deg);
+}
+
+.podium-card > * {
+  position: relative;
+  z-index: 1;
+  display: block;
+}
+
+.podium-card > span {
+  margin-bottom: 3px;
+  font-size: 21px;
+}
+
+.podium-card > strong {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.podium-card > small {
+  margin: 2px 0 5px;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.podium-card > b {
+  color: #a96d00;
+  font: 800 15px/1 "Fredoka", sans-serif;
+}
+
+.podium-1 {
+  min-height: 104px;
+  border-color: #d79d00;
+  background: linear-gradient(145deg, #fff6bd, #ffd65a);
+  box-shadow: 0 7px 0 rgba(215, 157, 0, .23);
+  transform: translateY(-5px);
+}
+
+.podium-2 {
+  background: linear-gradient(145deg, #f8fbfc, #dfe8ed);
+}
+
+.podium-3 {
+  background: linear-gradient(145deg, #fff2e2, #efd1ad);
+}
+
+.ranking-table th {
+  padding-block: 13px;
+  font-size: 11px;
+  letter-spacing: .02em;
+}
+
+.ranking-table td {
+  padding-block: 13px;
+  font-size: 12px;
+  vertical-align: middle;
+}
+
+.ranking-table .player-name {
+  font-size: 13px;
+}
+
+.ranking-table .rank {
+  width: 31px;
+  height: 31px;
+  font-size: 12px;
+}
+
+.ranking-table .score-badge {
+  display: inline-block;
+  padding: 6px 8px;
+  border-radius: 9px;
+  background: #fff2b5;
+  color: #b37700;
+  font: 800 13px/1 "Fredoka", sans-serif;
+  white-space: nowrap;
+}
+
+.ranking-table .rank-1 td {
+  background: rgba(255, 214, 90, .19);
+}
+
+.ranking-table .rank-2 td {
+  background: rgba(223, 232, 237, .25);
+}
+
+.ranking-table .rank-3 td {
+  background: rgba(239, 209, 173, .22);
+}
+
+.ranking-table .rank-1 .player-name::after {
+  content: "  👑";
+}
+
 .mission-panel .table-card {
   min-height: 300px;
 }
@@ -220,6 +351,55 @@ body.admin-view .stat-grid {
   position: sticky;
   z-index: 1;
   top: 0;
+}
+
+#rankingsPanel:fullscreen .ranking-pane-title b,
+#rankingsPanel.fullscreen-fallback .ranking-pane-title b {
+  font-size: clamp(18px, 1.4vw, 24px);
+}
+
+#rankingsPanel:fullscreen .ranking-pane-title small,
+#rankingsPanel.fullscreen-fallback .ranking-pane-title small {
+  font-size: clamp(11px, .85vw, 14px);
+}
+
+#rankingsPanel:fullscreen .podium-card > strong,
+#rankingsPanel.fullscreen-fallback .podium-card > strong {
+  font-size: clamp(15px, 1.1vw, 19px);
+}
+
+#rankingsPanel:fullscreen .podium-card > b,
+#rankingsPanel.fullscreen-fallback .podium-card > b {
+  font-size: clamp(17px, 1.25vw, 22px);
+}
+
+#rankingsPanel:fullscreen .ranking-table th,
+#rankingsPanel.fullscreen-fallback .ranking-table th {
+  font-size: clamp(12px, .9vw, 15px);
+}
+
+#rankingsPanel:fullscreen .ranking-table td,
+#rankingsPanel.fullscreen-fallback .ranking-table td {
+  padding-block: clamp(13px, 1.25vh, 19px);
+  font-size: clamp(14px, 1.05vw, 18px);
+}
+
+#rankingsPanel:fullscreen .ranking-table .player-name,
+#rankingsPanel.fullscreen-fallback .ranking-table .player-name {
+  font-size: clamp(16px, 1.2vw, 21px);
+}
+
+#rankingsPanel:fullscreen .ranking-table .rank,
+#rankingsPanel.fullscreen-fallback .ranking-table .rank {
+  width: 39px;
+  height: 39px;
+  font-size: 15px;
+}
+
+#rankingsPanel:fullscreen .ranking-table .score-badge,
+#rankingsPanel.fullscreen-fallback .ranking-table .score-badge {
+  padding: 8px 10px;
+  font-size: clamp(15px, 1.15vw, 20px);
 }
 
 @media (max-width: 900px) {
