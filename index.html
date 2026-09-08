@@ -92,15 +92,24 @@
           <small id="configHint"></small>
         </div>
         <div class="dashboard" id="dashboard" hidden>
-          <div class="admin-controls"><button class="export" data-action="export">导出 CSV</button><button class="logout" data-action="logout">退出</button></div>
-          <div class="stat-grid"><article><span>参与人数</span><strong id="totalPlayers">0</strong></article><article><span>活动房间</span><strong id="totalRooms">0</strong></article><article><span>平均点击</span><strong id="averageTaps">0</strong></article></div>
-          <nav class="admin-tabs"><button class="active" data-tab="rooms">房间管理</button><button data-tab="global">总排行榜</button><button data-tab="room">房间排行榜</button></nav>
+          <div class="admin-controls"><button class="export" data-action="export">导出全部资料 CSV</button><button class="logout" data-action="logout">退出</button></div>
+          <div class="stat-grid"><article><span>参与人数</span><strong id="totalPlayers">0</strong></article><article><span>活动房间</span><strong id="totalRooms">0</strong></article><article><span>平均点击</span><strong id="averageTaps">0</strong></article><article><span>特殊任务</span><strong id="missionCount">0</strong></article></div>
+          <nav class="admin-tabs"><button class="active" data-tab="rooms">房间管理</button><button data-tab="rankings">双榜排行</button><button data-tab="mission">特殊任务资料</button></nav>
           <div class="admin-panel active" id="roomsPanel">
             <form class="create-room" id="createRoomForm"><input id="roomName" maxlength="40" placeholder="例如：F1 开放日 A 组" required /><button type="submit">＋ 开新房间</button></form>
             <div class="room-list" id="roomList"></div>
           </div>
-          <div class="admin-panel" id="globalPanel"><div class="ranking-head"><div><b>总排行榜</b><span>每位学生保留最高成绩</span></div></div><div class="table-card"><div class="table-scroll"><table class="ranking-table"><thead><tr><th>排名</th><th>学生</th><th>房间</th><th>饼干</th><th>点击</th><th>总分</th></tr></thead><tbody id="globalRows"></tbody></table></div><div class="empty" id="globalEmpty">✦<span>等待第一位学生完成挑战</span></div></div></div>
-          <div class="admin-panel" id="roomPanel"><div class="ranking-head"><div><b>房间排行榜</b><span>查看指定房间成绩</span></div><select id="roomFilter"></select></div><div class="table-card"><div class="table-scroll"><table class="ranking-table"><thead><tr><th>排名</th><th>学生</th><th>班级</th><th>饼干</th><th>点击</th><th>总分</th></tr></thead><tbody id="roomRows"></tbody></table></div><div class="empty" id="roomEmpty">✦<span>这个房间还没有成绩</span></div></div></div>
+          <div class="admin-panel rankings-panel" id="rankingsPanel">
+            <div class="rankings-toolbar"><div><b>实时双榜</b><span>左侧全玩家 · 右侧当前房间</span></div><div><select id="roomFilter" aria-label="选择房间"></select><button class="fullscreen-rankings" data-action="fullscreen-rankings">⛶ 全屏显示</button></div></div>
+            <div class="dual-rankings">
+              <section class="ranking-pane global-ranking"><div class="ranking-pane-title"><span>🏆</span><div><b>全玩家排行榜</b><small>每位学生保留最高成绩</small></div></div><div class="table-card"><div class="table-scroll"><table class="ranking-table"><thead><tr><th>排名</th><th>学生</th><th>房间</th><th>饼干</th><th>点击</th><th>总分</th></tr></thead><tbody id="globalRows"></tbody></table></div><div class="empty" id="globalEmpty">✦<span>等待第一位学生完成挑战</span></div></div></section>
+              <section class="ranking-pane room-ranking"><div class="ranking-pane-title"><span>⭐</span><div><b>此房间排行榜</b><small id="selectedRoomLabel">尚未选择房间</small></div></div><div class="table-card"><div class="table-scroll"><table class="ranking-table"><thead><tr><th>排名</th><th>学生</th><th>班级</th><th>饼干</th><th>点击</th><th>总分</th></tr></thead><tbody id="roomRows"></tbody></table></div><div class="empty" id="roomEmpty">✦<span>这个房间还没有成绩</span></div></div></section>
+            </div>
+          </div>
+          <div class="admin-panel mission-panel" id="missionPanel">
+            <div class="ranking-head"><div><b>特殊任务资料</b><span>仅老师账号可查看；资料来自学生完成的强制特殊任务</span></div></div>
+            <div class="table-card"><div class="table-scroll"><table class="mission-table"><thead><tr><th>学生</th><th>班级</th><th>房间</th><th>朋友姓名</th><th>电话号码</th><th>提交时间</th></tr></thead><tbody id="missionRows"></tbody></table></div><div class="empty" id="missionEmpty">✦<span>还没有特殊任务资料</span></div></div>
+          </div>
         </div>
       </section>
     </main>

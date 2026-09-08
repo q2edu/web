@@ -4,3 +4,245 @@
   width: 200px;
   height: 200px;
 }
+
+body.admin-view .app {
+  width: min(100%, 1480px);
+  padding-inline: clamp(18px, 3vw, 48px);
+}
+
+body.admin-view .login-card {
+  max-width: 520px;
+  margin-inline: auto;
+}
+
+body.admin-view #dashboard .admin-tabs {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+body.admin-view .stat-grid {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.rankings-toolbar,
+.rankings-toolbar > div,
+.ranking-pane-title {
+  display: flex;
+  align-items: center;
+}
+
+.rankings-toolbar {
+  justify-content: space-between;
+  gap: 16px;
+  margin: 6px 2px 14px;
+}
+
+.rankings-toolbar > div {
+  gap: 9px;
+}
+
+.rankings-toolbar > div:first-child {
+  display: block;
+}
+
+.rankings-toolbar b,
+.rankings-toolbar span,
+.ranking-pane-title b,
+.ranking-pane-title small {
+  display: block;
+}
+
+.rankings-toolbar b {
+  font-size: 17px;
+}
+
+.rankings-toolbar span,
+.ranking-pane-title small {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.rankings-toolbar select {
+  min-width: 220px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: 11px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 10px;
+}
+
+.fullscreen-rankings {
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 11px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.dual-rankings {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.ranking-pane {
+  min-width: 0;
+  padding: 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, .72);
+}
+
+.ranking-pane.global-ranking {
+  background: linear-gradient(145deg, #fff9dc, rgba(255, 255, 255, .88));
+}
+
+.ranking-pane.room-ranking {
+  background: linear-gradient(145deg, #eaf8ff, rgba(255, 255, 255, .88));
+}
+
+.ranking-pane-title {
+  gap: 10px;
+  padding: 2px 3px 9px;
+}
+
+.ranking-pane-title > span {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1.5px solid var(--ink);
+  border-radius: 12px;
+  background: var(--yellow);
+  box-shadow: 2px 3px 0 var(--ink);
+  font-size: 18px;
+}
+
+.room-ranking .ranking-pane-title > span {
+  background: var(--blue);
+}
+
+.ranking-pane-title b {
+  font-size: 14px;
+}
+
+.dual-rankings .table-card {
+  min-height: 330px;
+  margin-top: 0;
+}
+
+.dual-rankings table {
+  min-width: 560px;
+}
+
+.mission-panel .table-card {
+  min-height: 300px;
+}
+
+.mission-table {
+  min-width: 980px;
+}
+
+.mission-table td strong,
+.mission-table td small {
+  display: block;
+}
+
+.mission-table td small {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 8px;
+}
+
+.mission-table .consent-ok {
+  color: #348145;
+}
+
+.phone-value {
+  display: inline-block;
+  padding: 5px 8px;
+  border-radius: 8px;
+  background: #fff1bd;
+  color: #5c4937;
+  font-weight: 800;
+  letter-spacing: .03em;
+  white-space: nowrap;
+}
+
+#rankingsPanel:fullscreen,
+#rankingsPanel.fullscreen-fallback {
+  z-index: 100;
+  display: flex !important;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  padding: clamp(16px, 2vw, 30px);
+  overflow: auto;
+  background: radial-gradient(circle at 8% 8%, #fff0b4, transparent 28rem), radial-gradient(circle at 92% 90%, #dff4ff, transparent 30rem), var(--cream);
+}
+
+#rankingsPanel.fullscreen-fallback {
+  position: fixed;
+  inset: 0;
+}
+
+#rankingsPanel:fullscreen .dual-rankings,
+#rankingsPanel.fullscreen-fallback .dual-rankings {
+  flex: 1;
+  min-height: 0;
+  grid-template-columns: repeat(2, minmax(520px, 1fr));
+}
+
+#rankingsPanel:fullscreen .ranking-pane,
+#rankingsPanel.fullscreen-fallback .ranking-pane {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+}
+
+#rankingsPanel:fullscreen .table-card,
+#rankingsPanel.fullscreen-fallback .table-card {
+  flex: 1;
+  min-height: 0;
+}
+
+#rankingsPanel:fullscreen .table-scroll,
+#rankingsPanel.fullscreen-fallback .table-scroll {
+  max-height: calc(100vh - 175px);
+}
+
+#rankingsPanel:fullscreen th,
+#rankingsPanel.fullscreen-fallback th {
+  position: sticky;
+  z-index: 1;
+  top: 0;
+}
+
+@media (max-width: 900px) {
+  body.admin-view .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .rankings-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .rankings-toolbar > div:last-child {
+    display: grid;
+    grid-template-columns: 1fr auto;
+  }
+
+  .rankings-toolbar select {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .dual-rankings {
+    grid-template-columns: 1fr;
+  }
+}

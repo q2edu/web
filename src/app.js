@@ -44,6 +44,7 @@ const state = {
 function showScreen(id) {
   clearTimer();
   screens.forEach((screen) => screen.classList.toggle("active", screen.id === id));
+  document.body.classList.toggle("admin-view", id === "adminScreen");
   window.scrollTo({ top: 0, behavior: "smooth" });
   if (id === "adminScreen") initAdmin();
 }
@@ -333,18 +334,27 @@ async function initAdmin() {
     return;
   }
   const { data } = await db.auth.getSession();
-  if (data.session) openDashboard();
+  if (data.session && data.session.user.app_metadata?.role === "teacher") openDashboard();
+  else if (data.session) {
+    await db.auth.signOut({ scope: "local" });
+    $("#configHint").textContent = "这个账号没有 teacher 权限，请设置权限后重新登录。";
+  }
 }
 
 async function login(event) {
   event.preventDefault();
   if (!db) { showToast("网站尚未连接 Supabase"); return; }
   $("#loginError").textContent = "";
-  const { error } = await db.auth.signInWithPassword({
+  const { data, error } = await db.auth.signInWithPassword({
     email: $("#adminEmail").value.trim(),
     password: $("#adminPassword").value
   });
-  if (error) { $("#loginError").textContent = "登录失败，请检查账号或 teacher 权限。"; return; }
+  if (error) { $("#loginError").textContent = "登录失败，请检查邮箱和密码。"; return; }
+  if (data.session?.user.app_metadata?.role !== "teacher") {
+    await db.auth.signOut({ scope: "local" });
+    $("#loginError").textContent = "账号尚未设置 teacher 权限，请先在 Supabase 授权后重新登录。";
+    return;
+  }
   openDashboard();
 }
 
@@ -376,8 +386,10 @@ function renderAdmin() {
   $("#averageTaps").textContent = adminRecords.length
     ? Math.round(adminRecords.reduce((sum, record) => sum + record.tap_count, 0) / adminRecords.length)
     : 0;
+  $("#missionCount").textContent = adminRecords.filter((record) => record.friend_name && record.friend_phone).length;
   renderRooms();
   renderLeaderboards();
+  renderMissions();
 }
 
 function renderRooms() {
@@ -391,6 +403,8 @@ function renderRooms() {
   filter.innerHTML = adminRooms.map((room) => `<option value="${room.id}">${escapeHtml(room.name)} (${room.code})</option>`).join("");
   selectedRoomId = adminRooms.some((room) => room.id === previous) ? previous : (adminRooms[0]?.id || "");
   filter.value = selectedRoomId;
+  const selectedRoom = adminRooms.find((room) => room.id === selectedRoomId);
+  $("#selectedRoomLabel").textContent = selectedRoom ? `${selectedRoom.name} · ${selectedRoom.code}` : "尚未选择房间";
 }
 
 function uniqueBest(records) {
@@ -405,11 +419,48 @@ function uniqueBest(records) {
 function renderLeaderboards() {
   fillRanking($("#globalRows"), $("#globalEmpty"), uniqueBest(adminRecords), true);
   fillRanking($("#roomRows"), $("#roomEmpty"), uniqueBest(adminRecords.filter((record) => record.room_id === selectedRoomId)), false);
+  const selectedRoom = adminRooms.find((room) => room.id === selectedRoomId);
+  $("#selectedRoomLabel").textContent = selectedRoom ? `${selectedRoom.name} · ${selectedRoom.code}` : "尚未选择房间";
 }
 
 function fillRanking(tbody, empty, records, showRoom) {
   empty.classList.toggle("show", !records.length);
   tbody.innerHTML = records.map((record, index) => `<tr><td><b class="rank r${index + 1}">${index + 1}</b></td><td><strong>${escapeHtml(record.student_name)}</strong>${showRoom ? `<small>${escapeHtml(record.student_class)}</small>` : ""}</td><td>${showRoom ? escapeHtml(record.game_rooms?.name || "—") : escapeHtml(record.student_class)}</td><td>${record.found_count}</td><td>${record.tap_count}</td><td><b>${record.total_score} ★</b></td></tr>`).join("");
+}
+
+function renderMissions() {
+  const records = adminRecords.filter((record) => record.friend_name && record.friend_phone);
+  $("#missionEmpty").classList.toggle("show", !records.length);
+  $("#missionRows").innerHTML = records.map((record) => `<tr><td><strong>${escapeHtml(record.student_name)}</strong></td><td>${escapeHtml(record.student_class)}</td><td><strong>${escapeHtml(record.game_rooms?.name || "—")}</strong><small>${escapeHtml(record.game_rooms?.code || "")}</small></td><td><strong>${escapeHtml(record.friend_name)}</strong><small class="consent-ok">✓ 已确认同意</small></td><td><span class="phone-value">${escapeHtml(record.friend_phone)}</span></td><td>${formatDateTime(record.created_at)}</td></tr>`).join("");
+}
+
+function formatDateTime(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return new Intl.DateTimeFormat("zh-CN", {
+    month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit"
+  }).format(date);
+}
+
+async function toggleRankingsFullscreen() {
+  const panel = $("#rankingsPanel");
+  if (panel.classList.contains("fullscreen-fallback")) {
+    panel.classList.remove("fullscreen-fallback");
+    updateFullscreenButton();
+    return;
+  }
+  try {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else await panel.requestFullscreen();
+  } catch {
+    panel.classList.toggle("fullscreen-fallback");
+    updateFullscreenButton();
+  }
+}
+
+function updateFullscreenButton() {
+  const expanded = document.fullscreenElement === $("#rankingsPanel") || $("#rankingsPanel").classList.contains("fullscreen-fallback");
+  $(".fullscreen-rankings").textContent = expanded ? "✕ 退出全屏" : "⛶ 全屏显示";
 }
 
 async function createRoom(event) {
@@ -485,17 +536,28 @@ function initMusic() {
   window.onYouTubeIframeAPIReady = () => {
     musicPlayer = new window.YT.Player("youtubePlayer", {
       videoId: MUSIC_ID,
-      playerVars: { autoplay: 1, loop: 1, playlist: MUSIC_ID, controls: 0, disablekb: 1, playsinline: 1, rel: 0 },
+      playerVars: { autoplay: 1, loop: 1, playlist: MUSIC_ID, controls: 0, disablekb: 1, playsinline: 1, rel: 0, origin: location.origin },
       events: { onReady: (event) => {
+        event.target.getIframe()?.setAttribute("allow", "autoplay; encrypted-media");
+        event.target.unMute();
         event.target.setVolume(100);
         event.target.playVideo();
         setTimeout(() => { if (event.target.getPlayerState() !== 1) $("#musicGate").hidden = false; }, 1800);
-      } }
+      }, onStateChange: (event) => {
+        if (event.data === window.YT.PlayerState.PLAYING) $("#musicGate").hidden = true;
+      }, onAutoplayBlocked: () => { $("#musicGate").hidden = false; } }
     });
   };
   const script = document.createElement("script");
   script.src = "https://www.youtube.com/iframe_api";
   document.head.appendChild(script);
+}
+
+function unlockMusicOnFirstInteraction() {
+  if (!musicPlayer) return;
+  ensureMusic();
+  window.removeEventListener("pointerdown", unlockMusicOnFirstInteraction, true);
+  window.removeEventListener("keydown", unlockMusicOnFirstInteraction, true);
 }
 
 function ensureMusic() {
@@ -598,6 +660,7 @@ document.addEventListener("click", async (event) => {
   if (action === "finish") finish();
   if (action === "restart") { resetGame(); showScreen("introScreen"); }
   if (action === "export") exportCsv();
+  if (action === "fullscreen-rankings") toggleRankingsFullscreen();
   if (action === "logout") logout();
   if (action === "music") toggleMusic();
   if (action === "enable-music") ensureMusic();
@@ -607,6 +670,9 @@ document.addEventListener("click", async (event) => {
 
 window.addEventListener("online", flushQueue);
 window.addEventListener("beforeunload", clearTimer);
+document.addEventListener("fullscreenchange", updateFullscreenButton);
+window.addEventListener("pointerdown", unlockMusicOnFirstInteraction, true);
+window.addEventListener("keydown", unlockMusicOnFirstInteraction, true);
 initMusic();
 resetGame();
 resolveRoom();
