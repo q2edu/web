@@ -14,9 +14,9 @@ const db = SUPABASE_URL && SUPABASE_PUBLIC_KEY
   : null;
 
 const PENDING_KEY = "chiiQuestPendingV3";
-const FIND_SECONDS = 20;
-const TAP_SECONDS = 15;
-const TOTAL_TARGETS = 14;
+const FIND_SECONDS = 15;
+const TAP_SECONDS = 10;
+const TOTAL_TARGETS = 20;
 const RANKING_PAGE_SIZE = 10;
 const MUSIC_ID = "LzzW_TBL558";
 
@@ -38,8 +38,14 @@ const state = {
   found: 0,
   taps: 0,
   invited: false,
+  bonusPoints: 0,
   friendName: "",
   friendPhone: "",
+  friendAffiliation: "",
+  secondFriendName: "",
+  secondFriendPhone: "",
+  secondFriendAffiliation: "",
+  secondFriendConsent: false,
   attemptId: "",
   room: null
 };
@@ -58,7 +64,7 @@ function clearTimer() {
 }
 
 function score() {
-  return state.found * 10 + state.taps + (state.invited ? 50 : 0);
+  return state.found * 10 + state.taps + state.bonusPoints;
 }
 
 function refreshScore() {
@@ -79,12 +85,22 @@ function resetGame() {
     found: 0,
     taps: 0,
     invited: false,
+    bonusPoints: 0,
     friendName: "",
     friendPhone: "",
+    friendAffiliation: "",
+    secondFriendName: "",
+    secondFriendPhone: "",
+    secondFriendAffiliation: "",
+    secondFriendConsent: false,
     attemptId: uuid()
   });
   $("#joinForm").reset();
   $("#bonusForm").reset();
+  $("#extraFriendForm").reset();
+  $("#extraFriendModal").hidden = true;
+  $("#bonusError").textContent = "";
+  $("#extraFriendError").textContent = "";
   $("#foundCount").textContent = "0";
   $("#tapCount").textContent = "0";
   refreshScore();
@@ -171,14 +187,14 @@ function prepareFind() {
     board.appendChild(cell);
   }
 
-  $("#findTimer").textContent = "20.0";
+  $("#findTimer").textContent = "15.0";
   $("#findTimer").classList.remove("urgent");
   $("#findCover").style.display = "grid";
-  $("#findCoverTitle").textContent = "20 秒眼力大挑战";
-  $("#findCoverText").textContent = "在满满的 Chiikawa 伙伴中，点击藏起来的星星饼干。";
+  $("#findCoverTitle").textContent = "15 秒眼力大挑战";
+  $("#findCoverText").textContent = "这里藏了 20 个星星饼干，快把它们找出来！";
   const button = $("#findCover .primary");
   button.dataset.action = "start-find";
-  button.innerHTML = "开始计时 <span>20s</span>";
+  button.innerHTML = "开始计时 <span>15s</span>";
 }
 
 function startFind() {
@@ -211,15 +227,15 @@ function endFind() {
 
 function prepareTap() {
   if (!$("#tapCover")) return;
-  $("#tapTimer").textContent = "15.0";
+  $("#tapTimer").textContent = "10.0";
   $("#tapTimer").classList.remove("urgent");
   $("#tapCount").textContent = "0";
   $("#tapCover").style.display = "grid";
-  $("#tapCoverTitle").textContent = "15 秒手速大挑战";
-  $("#tapCoverText").textContent = "不断点击角色；每点一次，乌萨奇就会开心地跳起来！";
+  $("#tapCoverTitle").textContent = "10 秒手速大挑战";
+  $("#tapCoverText").textContent = "点击乌萨奇看你能让他跳多少次！";
   const button = $("#tapCover .primary");
   button.dataset.action = "start-tap";
-  button.innerHTML = "开始计时 <span>15s</span>";
+  button.innerHTML = "开始计时 <span>10s</span>";
 }
 
 function startTap() {
@@ -281,6 +297,12 @@ function payload() {
     totalScore: score(),
     friendName: state.friendName,
     friendPhone: state.friendPhone,
+    friendAffiliation: state.friendAffiliation,
+    secondFriendName: state.secondFriendName,
+    secondFriendPhone: state.secondFriendPhone,
+    secondFriendAffiliation: state.secondFriendAffiliation,
+    secondFriendConsent: state.secondFriendConsent,
+    bonusPoints: state.bonusPoints,
     friendConsent: state.invited
   };
 }
@@ -457,7 +479,7 @@ function renderPodium(container, records) {
 function renderMissions() {
   const records = adminRecords.filter((record) => record.friend_name && record.friend_phone);
   $("#missionEmpty").classList.toggle("show", !records.length);
-  $("#missionRows").innerHTML = records.map((record) => `<tr><td><strong>${escapeHtml(record.student_name)}</strong></td><td>${escapeHtml(record.student_class)}</td><td><strong>${escapeHtml(record.game_rooms?.name || "—")}</strong><small>${escapeHtml(record.game_rooms?.code || "")}</small></td><td><strong>${escapeHtml(record.friend_name)}</strong><small class="consent-ok">✓ 已确认同意</small></td><td><span class="phone-value">${escapeHtml(record.friend_phone)}</span></td><td>${formatDateTime(record.created_at)}</td></tr>`).join("");
+  $("#missionRows").innerHTML = records.map((record) => `<tr><td><strong>${escapeHtml(record.student_name)}</strong></td><td>${escapeHtml(record.student_class)}</td><td><strong>${escapeHtml(record.game_rooms?.name || "—")}</strong><small>${escapeHtml(record.game_rooms?.code || "")}</small></td><td><strong>${escapeHtml(record.friend_name)}</strong><small class="consent-ok">${escapeHtml(record.friend_affiliation || "—")} · ✓ 已确认</small></td><td><span class="phone-value">${escapeHtml(record.friend_phone)}</span></td><td><strong>${escapeHtml(record.second_friend_name || "—")}</strong><small>${escapeHtml(record.second_friend_affiliation || "")}</small></td><td>${record.second_friend_phone ? `<span class="phone-value">${escapeHtml(record.second_friend_phone)}</span>` : "—"}</td><td><b>${record.bonus_points ?? 50} ★</b></td><td>${formatDateTime(record.created_at)}</td></tr>`).join("");
 }
 
 function formatDateTime(value) {
@@ -542,11 +564,13 @@ async function logout() {
 function exportCsv() {
   if (!adminRecords.length) { showToast("暂无记录可导出"); return; }
   const rows = [
-    ["房间", "房间代码", "学生名字", "Form", "找到饼干", "点击次数", "总分", "朋友名字", "朋友电话", "同意时间", "完成时间"],
+    ["房间", "房间代码", "学生名字", "Form", "找到饼干", "点击次数", "总分", "特殊任务积分", "朋友1名字", "朋友1电话", "朋友1身份", "朋友2名字", "朋友2电话", "朋友2身份", "同意时间", "完成时间"],
     ...adminRecords.map((record) => [
       record.game_rooms?.name || "", record.game_rooms?.code || "", record.student_name,
-      record.student_class, record.found_count, record.tap_count, record.total_score,
-      record.friend_name, record.friend_phone, record.consent_at, record.created_at
+      record.student_class, record.found_count, record.tap_count, record.total_score, record.bonus_points,
+      record.friend_name, record.friend_phone, record.friend_affiliation,
+      record.second_friend_name, record.second_friend_phone, record.second_friend_affiliation,
+      record.consent_at, record.created_at
     ])
   ];
   const csv = "\ufeff" + rows.map((row) => row.map((value) => `"${String(value ?? "").replace(/"/g, '""')}"`).join(",")).join("\r\n");
@@ -638,8 +662,14 @@ $("#joinForm").addEventListener("submit", (event) => {
   state.found = 0;
   state.taps = 0;
   state.invited = false;
+  state.bonusPoints = 0;
   state.friendName = "";
   state.friendPhone = "";
+  state.friendAffiliation = "";
+  state.secondFriendName = "";
+  state.secondFriendPhone = "";
+  state.secondFriendAffiliation = "";
+  state.secondFriendConsent = false;
   prepareFind();
   refreshScore();
   showScreen("findScreen");
@@ -650,13 +680,36 @@ $("#bonusForm").addEventListener("submit", (event) => {
   event.preventDefault();
   const name = $("#friendName").value.trim();
   const phone = $("#friendPhone").value.trim();
+  const affiliation = document.querySelector('input[name="friendAffiliation"]:checked')?.value || "";
   if (!name || phone.replace(/\D/g, "").length < 8) { $("#bonusError").textContent = "请填写朋友名字和有效电话号码。"; return; }
+  if (!affiliation) { $("#bonusError").textContent = "请选择朋友是非本院或本院。"; return; }
   if (!$("#friendConsent").checked) { $("#bonusError").textContent = "请先确认资料使用说明。"; return; }
   state.invited = true;
+  state.bonusPoints = 50;
   state.friendName = name;
   state.friendPhone = phone;
+  state.friendAffiliation = affiliation;
   refreshScore();
   burstStars();
+  $("#extraFriendModal").hidden = false;
+});
+
+$("#extraFriendForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const name = $("#secondFriendName").value.trim();
+  const phone = $("#secondFriendPhone").value.trim();
+  const affiliation = document.querySelector('input[name="secondFriendAffiliation"]:checked')?.value || "";
+  if (!name || phone.replace(/\D/g, "").length < 8) { $("#extraFriendError").textContent = "请填写朋友名字和有效电话号码。"; return; }
+  if (!affiliation) { $("#extraFriendError").textContent = "请选择朋友是非本院或本院。"; return; }
+  if (!$("#secondFriendConsent").checked) { $("#extraFriendError").textContent = "请先确认资料使用说明。"; return; }
+  state.secondFriendName = name;
+  state.secondFriendPhone = phone;
+  state.secondFriendAffiliation = affiliation;
+  state.secondFriendConsent = true;
+  state.bonusPoints = 200;
+  refreshScore();
+  burstStars();
+  $("#extraFriendModal").hidden = true;
   showScreen("tapScreen");
 });
 
@@ -690,6 +743,8 @@ document.addEventListener("click", async (event) => {
   if (action === "admin") showScreen("adminScreen");
   if (action === "start-find") startFind();
   if (action === "to-bonus") showScreen("bonusScreen");
+  if (action === "skip-bonus") showScreen("tapScreen");
+  if (action === "skip-extra") { $("#extraFriendModal").hidden = true; showScreen("tapScreen"); }
   if (action === "start-tap") startTap();
   if (action === "finish") finish();
   if (action === "restart") { resetGame(); showScreen("introScreen"); }

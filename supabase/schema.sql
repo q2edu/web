@@ -16,18 +16,51 @@ create table if not exists public.challenge_submissions (
   room_id uuid references public.game_rooms(id) on delete restrict,
   student_name text not null check (char_length(student_name) between 1 and 30),
   student_class text not null check (char_length(student_class) between 1 and 20),
-  found_count integer not null check (found_count between 0 and 14),
+  found_count integer not null check (found_count between 0 and 20),
   tap_count integer not null check (tap_count between 0 and 1000),
   total_score integer not null check (total_score between 0 and 2000),
-  friend_name text not null,
-  friend_phone text not null,
-  consent_at timestamptz not null,
+  bonus_points integer not null default 0 check (bonus_points in (0, 50, 200)),
+  friend_name text,
+  friend_phone text,
+  friend_affiliation text check (friend_affiliation in ('非本院', '本院')),
+  second_friend_name text,
+  second_friend_phone text,
+  second_friend_affiliation text check (second_friend_affiliation in ('非本院', '本院')),
+  consent_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
 
 alter table public.challenge_submissions
   add column if not exists room_id uuid references public.game_rooms(id) on delete restrict;
+
+alter table public.challenge_submissions
+  add column if not exists bonus_points integer not null default 0,
+  add column if not exists friend_affiliation text,
+  add column if not exists second_friend_name text,
+  add column if not exists second_friend_phone text,
+  add column if not exists second_friend_affiliation text;
+
+alter table public.challenge_submissions
+  alter column friend_name drop not null,
+  alter column friend_phone drop not null,
+  alter column consent_at drop not null;
+
+update public.challenge_submissions
+set bonus_points = 50
+where bonus_points = 0
+  and friend_name is not null
+  and friend_phone is not null
+  and total_score = found_count * 10 + tap_count + 50;
+
+alter table public.challenge_submissions drop constraint if exists challenge_submissions_found_count_check;
+alter table public.challenge_submissions add constraint challenge_submissions_found_count_check check (found_count between 0 and 20);
+alter table public.challenge_submissions drop constraint if exists challenge_submissions_bonus_points_check;
+alter table public.challenge_submissions add constraint challenge_submissions_bonus_points_check check (bonus_points in (0, 50, 200));
+alter table public.challenge_submissions drop constraint if exists challenge_submissions_friend_affiliation_check;
+alter table public.challenge_submissions add constraint challenge_submissions_friend_affiliation_check check (friend_affiliation in ('非本院', '本院'));
+alter table public.challenge_submissions drop constraint if exists challenge_submissions_second_friend_affiliation_check;
+alter table public.challenge_submissions add constraint challenge_submissions_second_friend_affiliation_check check (second_friend_affiliation in ('非本院', '本院'));
 
 create or replace function public.set_updated_at()
 returns trigger language plpgsql security invoker set search_path = '' as $$

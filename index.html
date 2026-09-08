@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#fff7df" />
-    <meta name="description" content="Chiikawa 60 秒伙伴挑战：找星星饼干、邀请伙伴、30 秒极速连点。" />
+    <meta name="description" content="Chiikawa 伙伴挑战：15 秒寻找 20 个星星饼干、朋友邀请任务、10 秒乌萨奇跳跳。" />
     <title>Chiikawa 伙伴大挑战</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -23,7 +23,7 @@
       </header>
 
       <section class="screen active intro" id="introScreen">
-        <p class="kicker"><i></i> 20 秒眼力 · 15 秒手速</p>
+        <p class="kicker"><i></i> 15 秒眼力 · 10 秒手速</p>
         <h1>和 Chiikawa<br />一起<span>玩翻全场！</span></h1>
         <p class="lead">眼力、手速，一次全部测出来。<br />准备好成为今天的最强伙伴了吗？</p>
         <div class="hero-stickers" aria-hidden="true">
@@ -41,10 +41,10 @@
       </section>
 
       <section class="screen game-screen" id="findScreen">
-        <div class="level-heading"><div><p>LEVEL 01 · 眼力挑战</p><h2>找到星星饼干！</h2></div><div class="timer" id="findTimer">20.0</div></div>
-        <div class="mission-strip"><img src="/assets/star-cookie.png" alt="星星饼干" /><span>藏在角色中，找到越多越好</span><b><span id="foundCount">0</span> 个</b></div>
+        <div class="level-heading"><div><p>LEVEL 01 · 眼力挑战</p><h2>找到星星饼干！</h2></div><div class="timer" id="findTimer">15.0</div></div>
+        <div class="mission-strip"><img src="/assets/star-cookie.png" alt="星星饼干" /><span>有 20 个饼干要找</span><b><span id="foundCount">0</span> / 20 个</b></div>
         <div class="find-board" id="findBoard" aria-label="寻找星星饼干游戏区域"></div>
-        <div class="game-cover" id="findCover"><div class="cover-card"><span class="cover-icon">🔎</span><h3 id="findCoverTitle">20 秒眼力大挑战</h3><p id="findCoverText">在满满的 Chiikawa 伙伴中，点击藏起来的星星饼干。</p><button class="primary" data-action="start-find">开始计时 <span>20s</span></button></div></div>
+        <div class="game-cover" id="findCover"><div class="cover-card"><span class="cover-icon">🔎</span><h3 id="findCoverTitle">15 秒眼力大挑战</h3><p id="findCoverText">这里藏了 20 个星星饼干，快把它们找出来！</p><button class="primary" data-action="start-find">开始计时 <span>15s</span></button></div></div>
       </section>
 
       <section class="screen bonus-screen" id="bonusScreen">
@@ -55,20 +55,22 @@
         <form class="card bonus-form" id="bonusForm">
           <label><span>朋友名字</span><input id="friendName" maxlength="30" placeholder="输入朋友的名字" /></label>
           <label><span>电话号码</span><input id="friendPhone" inputmode="tel" maxlength="20" placeholder="例如：01X-XXXXXXX" /></label>
+          <fieldset class="affiliation-field"><legend>朋友身份</legend><div class="choice-row"><label><input name="friendAffiliation" type="radio" value="非本院" /><span>非本院</span></label><label><input name="friendAffiliation" type="radio" value="本院" /><span>本院</span></label></div></fieldset>
           <label class="consent"><input id="friendConsent" type="checkbox" /><span>我确认这是我认识并愿意邀请参加活动的朋友，资料只用于本次活动邀请。</span></label>
           <p class="form-error" id="bonusError"></p>
           <button class="primary" type="submit">完成特殊任务 <span>+50 ★</span></button>
+          <button class="skip" type="button" data-action="skip-bonus">暂时没有</button>
         </form>
       </section>
 
       <section class="screen game-screen tap-screen" id="tapScreen">
-        <div class="level-heading"><div><p>LEVEL 02 · 手速挑战</p><h2>乌萨奇跳跳跳！</h2></div><div class="timer" id="tapTimer">15.0</div></div>
+        <div class="level-heading"><div><p>LEVEL 02 · 手速挑战</p><h2>乌萨奇跳跳跳！</h2></div><div class="timer" id="tapTimer">10.0</div></div>
         <div class="tap-score"><span>当前点击</span><strong id="tapCount">0</strong><b>次</b></div>
         <div class="tap-stage" id="tapStage">
           <button class="tap-character" id="tapCharacter" aria-label="点击乌萨奇"><img src="/assets/usagi-tap.png" alt="闭嘴微笑的乌萨奇" draggable="false" /></button>
-          <div class="tap-shadow"></div><p>用最快速度点击角色！</p>
+          <div class="tap-shadow"></div><p>点击乌萨奇看你能让他跳多少次</p>
         </div>
-        <div class="game-cover" id="tapCover"><div class="cover-card"><span class="cover-icon">👆</span><h3 id="tapCoverTitle">15 秒手速大挑战</h3><p id="tapCoverText">像 Popcat 一样不断点击。每点一次，乌萨奇就会开心地跳起来！</p><button class="primary" data-action="start-tap">开始计时 <span>15s</span></button></div></div>
+        <div class="game-cover" id="tapCover"><div class="cover-card"><span class="cover-icon">👆</span><h3 id="tapCoverTitle">10 秒手速大挑战</h3><p id="tapCoverText">点击乌萨奇看你能让他跳多少次！</p><button class="primary" data-action="start-tap">开始计时 <span>10s</span></button></div></div>
       </section>
 
       <section class="screen result-screen" id="resultScreen">
@@ -107,12 +109,13 @@
             </div>
           </div>
           <div class="admin-panel mission-panel" id="missionPanel">
-            <div class="ranking-head"><div><b>特殊任务资料</b><span>仅老师账号可查看；资料来自学生完成的强制特殊任务</span></div></div>
-            <div class="table-card"><div class="table-scroll"><table class="mission-table"><thead><tr><th>学生</th><th>Form</th><th>房间</th><th>朋友姓名</th><th>电话号码</th><th>提交时间</th></tr></thead><tbody id="missionRows"></tbody></table></div><div class="empty" id="missionEmpty">✦<span>还没有特殊任务资料</span></div></div>
+            <div class="ranking-head"><div><b>特殊任务资料</b><span>仅老师账号可查看；资料来自学生自愿完成的特殊任务</span></div></div>
+            <div class="table-card"><div class="table-scroll"><table class="mission-table"><thead><tr><th>学生</th><th>Form</th><th>房间</th><th>朋友 1</th><th>电话号码</th><th>朋友 2</th><th>电话号码</th><th>任务积分</th><th>提交时间</th></tr></thead><tbody id="missionRows"></tbody></table></div><div class="empty" id="missionEmpty">✦<span>还没有特殊任务资料</span></div></div>
           </div>
         </div>
       </section>
     </main>
+    <div class="bonus-modal" id="extraFriendModal" role="dialog" aria-modal="true" aria-labelledby="extraFriendTitle" hidden><div class="bonus-modal-card"><button class="modal-close" type="button" data-action="skip-extra" aria-label="关闭">×</button><span class="cover-icon">✨</span><h3 id="extraFriendTitle">再填入多一个朋友<br />可以得到翻倍积分哦</h3><p>成功填入后再加 150 分！</p><form id="extraFriendForm"><label><span>朋友名字</span><input id="secondFriendName" maxlength="30" placeholder="输入另一位朋友的名字" /></label><label><span>电话号码</span><input id="secondFriendPhone" inputmode="tel" maxlength="20" placeholder="例如：01X-XXXXXXX" /></label><fieldset class="affiliation-field"><legend>朋友身份</legend><div class="choice-row"><label><input name="secondFriendAffiliation" type="radio" value="非本院" /><span>非本院</span></label><label><input name="secondFriendAffiliation" type="radio" value="本院" /><span>本院</span></label></div></fieldset><label class="consent"><input id="secondFriendConsent" type="checkbox" /><span>我确认这是我认识并愿意邀请参加活动的朋友，资料只用于本次活动邀请。</span></label><p class="form-error" id="extraFriendError"></p><button class="primary" type="submit">填入朋友并加分 <span>+150 ★</span></button><button class="skip" type="button" data-action="skip-extra">暂时不了，继续游戏</button></form></div></div>
     <div class="qr-modal" id="qrModal" hidden><div class="qr-card"><button data-action="close-qr">×</button><p>扫码进入房间</p><h3 id="qrRoomName">房间</h3><canvas id="qrCanvas"></canvas><strong id="qrRoomCode">------</strong><small>学生扫码后，成绩会自动归入这个房间。</small><button class="copy-link" data-action="copy-room-link">复制房间链接</button></div></div>
     <button class="music-gate" id="musicGate" data-action="enable-music" hidden>♫ 轻触开启背景音乐</button>
     <div class="toast" id="toast"></div><div class="fx-layer" id="fxLayer"></div>

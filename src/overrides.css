@@ -470,3 +470,120 @@ body.admin-view .stat-grid {
     grid-template-columns: 1fr;
   }
 }
+
+.affiliation-field {
+  margin: 13px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.affiliation-field legend {
+  margin: 0 0 7px 3px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.choice-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+}
+
+.choice-row label {
+  position: relative;
+  margin: 0;
+}
+
+.choice-row input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.choice-row span {
+  display: grid;
+  height: 43px;
+  margin: 0 !important;
+  place-items: center;
+  border: 1.5px solid #ded2c3;
+  border-radius: 13px;
+  background: #fffdf9;
+  font-size: 11px;
+  font-weight: 800 !important;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.choice-row input:checked + span {
+  border-color: var(--coral);
+  background: #fff0ec;
+  color: var(--red);
+  box-shadow: 0 0 0 3px rgba(255, 118, 100, .1);
+}
+
+.choice-row input:focus-visible + span {
+  outline: 3px solid rgba(255, 118, 100, .25);
+}
+
+.bonus-modal {
+  position: fixed;
+  z-index: 70;
+  inset: 0;
+  display: grid;
+  padding: 20px;
+  place-items: center;
+  background: rgba(62, 48, 43, .62);
+  backdrop-filter: blur(7px);
+}
+
+.bonus-modal[hidden] {
+  display: none;
+}
+
+.bonus-modal-card {
+  position: relative;
+  width: min(100%, 410px);
+  max-height: calc(100vh - 30px);
+  padding: 24px;
+  overflow: auto;
+  border: 2px solid var(--ink);
+  border-radius: 25px;
+  background: var(--paper);
+  box-shadow: 7px 9px 0 var(--ink);
+  text-align: center;
+}
+
+.bonus-modal-card .modal-close {
+  position: absolute;
+  top: 11px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #eee5da;
+  font-size: 19px;
+}
+
+.bonus-modal-card h3 {
+  margin: 8px 0 5px;
+  font-size: 23px;
+  line-height: 1.35;
+}
+
+.bonus-modal-card > p {
+  margin: 0 0 16px;
+  color: var(--red);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.bonus-modal-card form {
+  text-align: left;
+}
+
+.bonus-modal-card .skip {
+  text-align: center;
+}
